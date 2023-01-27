@@ -14,9 +14,9 @@ public class APICaller{
 
     }
 
-    public func fetchCourseNames(completion: @escaping (String) -> Void){
+    public func fetchCourseNames(completion: @escaping ([String]) -> Void){
         guard let url = URL(string: "https://catfact.ninja/fact") else {
-            completion("nil")
+            completion([])
 
             return
         }
@@ -26,11 +26,15 @@ public class APICaller{
             }
             //decode
             do {
-                let result = try JSONSerialization.jsonObject(with: data,options: .allowFragments)
-                print(result)
+                guard let json = try JSONSerialization.jsonObject(with: data,options: .allowFragments) as? [[String:String]] else {
+                    completion([])
+                    return
+                }
+                let facts: [String] = json.compactMap({$0["fact"]})
+                completion(facts)
             }
             catch{
-                completion("nil")
+                completion([])
             }
         }
         task.resume()
